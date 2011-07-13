@@ -3,10 +3,10 @@
 import os
 import xlrd, xlwt
 
+
 from django.test import TestCase
 
 from settings import MEDIA_ROOT
-from curvefit.file_handler import file_handler
 from curvefit.functions import *
 
 class FileHandlerTest(TestCase):
@@ -26,12 +26,11 @@ class FileHandlerTest(TestCase):
             sheet.write(i, 1, i * i)
         wbk.save(filename)
         # test
-        x, y, m = file_handler(filename, '.xls')
-        self.assertEqual(x, range(15))
-        self.assertEqual(y, [i*i for i in range(15)])
-        self.assertEqual(m, '')
-        # clean up
-        os.remove(filename)
+        fit = CurveFit(filename, 'ic50', [1.0, 1.0, 1.0])
+        fit.file_handler('.xls')
+        self.assertEqual(list(map(int, fit.x)), range(15))
+        self.assertEqual(list(map(int, fit.y)), [i*i for i in range(15)])
+        self.assertEqual(fit.msg, '')
     
     def test_read_csv_files(self):
         """
@@ -42,11 +41,11 @@ class FileHandlerTest(TestCase):
         for i in range(15):
             csv.write("%d,%d\n" % (i, i*i))
         csv.close()
-        x, y, m = file_handler(filename, '.csv')
-        self.assertEqual(x, range(15))
-        self.assertEqual(y, [i*i for i in range(15)])
-        self.assertEqual(m, '')
-        os.remove(filename)
+        fit = CurveFit(filename, 'ic50', [1.0, 1.0, 1.0])
+        fit.file_handler('.csv')
+        self.assertEqual(list(map(int, fit.x)), range(15))
+        self.assertEqual(list(map(int, fit.y)), [i*i for i in range(15)])
+        self.assertEqual(fit.msg, '')
     
     def test_read_txt_files(self):
         """
@@ -57,11 +56,11 @@ class FileHandlerTest(TestCase):
         for i in range(15):
             csv.write("%d\t%d\n" % (i, i*i))
         csv.close()
-        x, y, m = file_handler(filename, '.txt')
-        self.assertEqual(x, range(15))
-        self.assertEqual(y, [i*i for i in range(15)])
-        self.assertEqual(m, '')
-        os.remove(filename)
+        fit = CurveFit(filename, 'ic50', [1.0, 1.0, 1.0])
+        fit.file_handler('.txt')
+        self.assertEqual(list(map(int, fit.x)), range(15))
+        self.assertEqual(list(map(int, fit.y)), [i*i for i in range(15)])
+        self.assertEqual(fit.msg, '')
     
     # Add tests for unexpected formats
     
@@ -80,7 +79,9 @@ class CurveFitTest(TestCase):
         x = np.array([10**xi for xi in x])
         y = 1 - (param[0]/
                  (1 + (param[1]/x) ** param[2]))
-        fit = CurveFit('ic50', [1.0, 1.0, 1.0], x, y)
+        fit = CurveFit('dummy', 'ic50', [1.0, 1.0, 1.0])
+        fit.x = x
+        fit.y = y
         iters, vals = fit.levenberg_marquardt()
         # round values to minimize floating point differences
         param_to_str = "%.4f, %.4f, %.4f" % (param[0], param[1], param[2])
@@ -98,7 +99,9 @@ class CurveFitTest(TestCase):
         x = np.array([10**xi for xi in x])
         y = 1 - (param[0]/
                  (1 + (param[1]/x) ** param[2]))
-        fit = CurveFit('ic50', param, x, y)
+        fit = CurveFit('dummy','ic50', param)
+        fit.x = x
+        fit.y = y
         iters, vals = fit.levenberg_marquardt()
         # round values to minimize floating point differences
         self.assertEqual(iters, 0)
