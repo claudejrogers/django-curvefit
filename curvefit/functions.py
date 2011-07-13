@@ -9,6 +9,7 @@ from settings import MEDIA_ROOT
 np.seterr(all='ignore')
 
 class CurveFit:
+    """"""
     def __init__(self, model, var, xdata, ydata):
         self.model = model
         self.param = var
@@ -83,7 +84,10 @@ class CurveFit:
                 v *= 2
         return (k, self.var)
         
-    def plot(self):
+    def plot(self, plotname):
+        """
+        Plot results and save to MEDIA_ROOT.
+        """
         plt.clf()
         # swap input data with data for a smooth curve
         xdata = [i for i in self.x]
@@ -101,6 +105,6 @@ class CurveFit:
         plt.xlabel("xlab", fontsize=24)
         plt.ylabel("ylab", fontsize=24)
         plt.subplots_adjust(bottom=0.15)
-        plotfile = os.path.join(MEDIA_ROOT, "temp.png")
+        plotfile = os.path.join(MEDIA_ROOT, plotname)
         plt.savefig(plotfile, dpi=80)
         self.x = xdata
