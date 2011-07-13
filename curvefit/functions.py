@@ -1,4 +1,5 @@
 import os
+import random
 import numpy as np
 import xlrd
 import matplotlib.pyplot as plt
@@ -122,7 +123,7 @@ class CurveFit:
                 v *= 2
         return (k, self.var)
         
-    def plot(self, plotname):
+    def plot(self, plotname, xlab, ylab):
         """
         Plot results and save to MEDIA_ROOT.
         """
@@ -140,9 +141,17 @@ class CurveFit:
             plt.xscale('log')
         plt.ylim((min(self.y) - max(self.y) * 0.2), 
                  (max(self.y) + max(self.y) * 0.2))
-        plt.xlabel("xlab", fontsize=24)
-        plt.ylabel("ylab", fontsize=24)
+        plt.xlabel(xlab, fontsize=24)
+        plt.ylabel(ylab, fontsize=24)
         plt.subplots_adjust(bottom=0.15)
         plotfile = os.path.join(MEDIA_ROOT, plotname)
         plt.savefig(plotfile, dpi=80)
         self.x = xdata
+
+
+def random_key():
+    v = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    key = []
+    for i in range(20):
+        key.append(random.choice(v))
+    return "".join(key)

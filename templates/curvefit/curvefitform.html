@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Curve Fit{% endblock %}
+
+{% block content %}
+<h1>Curve Fit</h1>
+<p>
+  Enter an initial guess for the parameters below. 
+  Try to guess within an order of magnitude, but 1.0 will usually work.<br />
+  The input file must have x values in the first column, and y values in the second column. 
+</p>
+{% if msg %}
+  <p class="errorlist">{{ msg }}</p>
+{% endif %}
+<form enctype="multipart/form-data" action="/curvefit/" method="post">
+  {% csrf_token %}
+  {% for field in form %}
+  	<div class="fieldWrapper">
+  		{{ field.errors }}
+  		{{ field.label_tag|escape }} {{ field }} <div class="help-text">{{ field.help_text }}</div>
+  	</div>
+  {% endfor %}
+  <p class="recfield">&#42; Required field</p>
+  <p class="button">
+  	<input type="submit" value="Run" />
+  </p>
+</form>
+{% endblock %}

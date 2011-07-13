@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Fit Results{% endblock %}
+
+{% block content %}
+<h1>Curve Fit Results</h1>
+<p>
+  The data in <strong>{{ filename }}</strong> was successfully 
+  processed in {{ k }} iterations!
+</p>
+
+<h2>Fit Parameters</h2>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Value</th>
+  </tr>
+  {% for m in var %}
+  <tr class="{% if forloop.counter|divisibleby:2 %}even{% else %}odd{% endif %}">
+    <td>m<sub>{{ forloop.counter }}</sub></td>
+    <td>{{ m|floatformat:4 }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Best Fit Curve</h2>
+
+<img src="/resources/{{ plotfile }}" />
+
+{% endblock %}
