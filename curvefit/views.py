@@ -49,7 +49,7 @@ def curvefit(request):
             elif model == "mm":
                 var = np.array([m1, m2])
             
-            plotname = "plot" + random_key() + ".png"
+            plotname = "plot_" + random_key() + ".png"
             plotfile = os.path.join(MEDIA_ROOT, plotname)
             
             fit = CurveFit(filepath, model, var)

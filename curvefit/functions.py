@@ -59,12 +59,63 @@ class CurveFit:
         os.remove(self.filepath)
 
     def equation(self):
-        if self.model == "ic50":
+        if self.model == "boltzmann":
+            self.m = self.var[0] + ((self.var[1] - self.var[0]) /
+                    (1 + np.exp((self.var[2] - self.x) / self.var[3])))
+        elif self.model == "expdecay":
+            self.m = self.var[0] + self.var[1] * np.exp(-self.var[2] * self.x)
+        elif self.model == "gaussian":
+            self.m = self.var[0] + self.var[1] * np.exp(
+                                -(self.x - self.var[2])**2 / self.var[3]**2)
+        elif self.model == "hill":
+            self.m = self.var[0] / (1 + (self.var[1]/self.x)**self.var[2])
+        elif self.model == "ic50":
             self.m = 1 - (self.var[0]/
                      (1 + (self.var[1]/self.x) ** self.var[2]))
+        elif self.model == "mm":
+            self.m = (self.var[0] * self.x) / (self.var[1] + self.x)
+        elif self.model == "modsin":
+            self.m = self.var[0] * np.sin(np.pi * (self.x - self.var[1]) 
+                                                    / self.var[2])
 
     def derivatives(self):
-        if self.model == "ic50":
+        if self.model == "boltzmann":
+            d1 = 1 - (1 / (1 + np.exp((self.var[2] - self.x) / self.var[3])))
+            d2 = 1 / (1 + np.exp((self.var[2] - self.x) / self.var[3]))
+            d3 = (((self.var[0] - self.var[1]) * np.exp(
+                    (self.var[2] + self.x) / self.var[3])) 
+                  / (self.var[3] * (np.exp(self.var[2]/self.var[3]) + 
+                  np.exp(self.x / self.var[3]))**2))
+            d4 = (((self.var[1] - self.var[0]) * (self.var[2] - self.x) * 
+                    np.exp((self.var[2] - self.x) / self.var[3])) / 
+                    (self.var[3]**2 * (np.exp((self.var[2] -
+                     self.x)/self.var[3]) + 1)**2))
+            self.d = [d1, d2, d3, d4]
+        elif self.model == "expdecay":
+            d1 = self.x**0.0
+            d2 = np.exp(-self.var[2] * self.x)
+            d3 = -self.x * self.var[1] * np.exp(-self.var[2] * self.x)
+            self.d = [d1, d2, d3]
+        elif self.model == "gaussian":
+            d1 = self.x**0.0
+            d2 = np.exp(-(self.x - self.var[2])**2 / self.var[3]**2)
+            d3 = 2 * ((self.x - self.var[2]) / 
+                (self.var[3]**2))*self.var[1]*np.exp(
+                -(self.x - self.var[2])**2/self.var[3]**2)
+            d4 = 2 * ((self.x - self.var[2])**2 / 
+                self.var[3]**3)*self.var[1]*np.exp(
+                -(self.x - self.var[2])**2/self.var[3]**2)
+            self.d = [d1, d2, d3, d4]
+        elif self.model == "hill":
+            d1 = 1/(1 + (self.var[1] / self.x) ** self.var[2])
+            d2 = ((-self.var[0] * self.var[2] * self.var[1]**(self.var[2] - 1)
+                  * self.x**self.var[2]) / (self.var[1]**self.var[2] + 
+                  self.x**self.var[2])**2)
+            d3 = ((self.var[0] * (self.var[1] * self.x)**self.var[2] * 
+                  np.log(self.x/self.var[1])) / (self.var[1]**self.var[2] + 
+                  self.x**self.var[2])**2)
+            self.d = [d1, d2, d3]
+        elif self.model == "ic50":
             d1 = -(1/(1 + (self.var[1] / self.x) ** self.var[2]))
             d2 = ((self.var[0] * self.var[2]  * 
                   (self.var[1] / self.x) ** (self.var[2] - 1))/
@@ -73,7 +124,18 @@ class CurveFit:
                   np.log(self.var[1]/self.x))/(1 + 
                   (self.var[1]/self.x) ** self.var[2]) ** 2
             self.d = [d1, d2, d3]
-            
+        elif self.model == "mm":
+            d1 = self.x / (self.var[1] + self.x)
+            d2 = (-1) * (self.var[0] * self.x) / (self.var[1] + self.x) ** 2
+            self.d = [d1, d2]
+        elif self.model == "modsin":
+            d1 = np.sin(np.pi * (self.x - self.var[1]) / self.var[2])
+            d2 = (-self.var[0] * np.pi * np.cos(np.pi * (self.x - self.var[1]) 
+                  / self.var[2])) / self.var[2]
+            d3 = ((self.var[0] * np.pi * (self.var[1] - self.x) * np.cos(np.pi * 
+                  (self.x - self.var[1]) / self.var[2])) / self.var[2]**2)
+            self.d = [d1, d2, d3]
+    
     def get_f(self):
         self.equation()
         return self.y - self.m
