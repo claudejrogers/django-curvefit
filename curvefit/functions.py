@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 import xlrd
+
 import matplotlib.pyplot as plt
 
 from settings import MEDIA_ROOT
@@ -132,7 +133,7 @@ class CurveFit:
             d1 = np.sin(np.pi * (self.x - self.var[1]) / self.var[2])
             d2 = (-self.var[0] * np.pi * np.cos(np.pi * (self.x - self.var[1]) 
                   / self.var[2])) / self.var[2]
-            d3 = ((self.var[0] * np.pi * (self.var[1] - self.x) * np.cos(np.pi * 
+            d3 = ((self.var[0]*np.pi*(self.var[1] - self.x) * np.cos(np.pi* 
                   (self.x - self.var[1]) / self.var[2])) / self.var[2]**2)
             self.d = [d1, d2, d3]
     
@@ -199,7 +200,8 @@ class CurveFit:
                  mec='k', mew=1, mfc='None')
         plt.xticks(size = 18)
         plt.yticks(size = 18)
-        if self.model == "ic50":
+        if self.model == "boltzmann" or self.model == "hill" or \
+           self.model == "ic50":
             plt.xscale('log')
         plt.ylim((min(self.y) - max(self.y) * 0.2), 
                  (max(self.y) + max(self.y) * 0.2))
