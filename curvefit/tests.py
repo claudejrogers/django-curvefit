@@ -7,7 +7,6 @@ from django.test import TestCase
 
 from settings import MEDIA_ROOT, PROJECT_PATH
 from curvefit.views import *
-# from curvefit.functions import *
 
 class FileHandlerTest(TestCase):
     """
@@ -62,11 +61,21 @@ class FileHandlerTest(TestCase):
         self.assertEqual(list(map(int, fit.y)), [i*i for i in range(15)])
         self.assertEqual(fit.msg, '')
     
-    ###
-    ##
-    # Add tests for unexpected data formats
-    ##
-    ###
+    def test_bad_txt_file(self):
+        """
+        Test that imporperly formated txt files are handled sanely
+        """
+        filename = os.path.join(MEDIA_ROOT, "test.txt")
+        txt = open(filename, "w")
+        for i in range(15):
+            txt.write("%d,%d\n" % (i, i*i))
+        txt.close()
+        fit = CurveFit(filename, 'ic50', [1.0, 1.0, 1.0])
+        fit.file_handler('.txt')
+        self.assertEqual(list(map(int, fit.x)), [])
+        self.assertEqual(list(map(int, fit.y)), [])
+        self.assertEqual(fit.msg, 'Cannot read data from input file.')
+
     
 class CurveFitTest(TestCase):
     """
@@ -244,6 +253,9 @@ class CurvefitSuccessTest(TestCase):
         txt.close()
         
     def test_curvefit_success_is_200(self):
+        """
+        Success returns a webpage
+        """
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.xls'))
         response = self.client.post('/curvefit/',
             {
@@ -260,6 +272,9 @@ class CurvefitSuccessTest(TestCase):
         self.assertEqual(response.status_code, 200)
         
     def test_curvefit_success_title(self):
+        """
+        Success produces the expected content (title).
+        """
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.xls'))
         response = self.client.post('/curvefit/',
             {
@@ -276,7 +291,11 @@ class CurvefitSuccessTest(TestCase):
         self.assertEqual(
             "<title>CurveFit | Fit Results</title>" in response.content, True
         )
+    
     def test_curvefit_success_fit_params(self):
+        """
+        Success produces the expected content (parameters).
+        """
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.xls'))
         response = self.client.post('/curvefit/',
             {
@@ -299,3 +318,253 @@ class CurvefitSuccessTest(TestCase):
         self.assertEqual(
             "<td>1.7532</td>" in response.content, True
         )
+        
+    def test_curvefit_success_csv_files_work_too(self):
+        """
+        csv files are processed successfully.
+        """
+        csvfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.csv'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "y axis",
+                'y_label': "x axis",
+                'infile': open(csvfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(
+            "<td>0.9563</td>" in response.content, True
+        )
+        self.assertEqual(
+            "<td>0.1221</td>" in response.content, True
+        )
+        self.assertEqual(
+            "<td>1.7532</td>" in response.content, True
+        )
+        
+    def test_curvefit_success_txt_files_work_too(self):
+        """
+        txt files are processed successfully.
+        """
+        txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "y axis",
+                'y_label': "x axis",
+                'infile': open(txtfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(
+            "<td>0.9563</td>" in response.content, True
+        )
+        self.assertEqual(
+            "<td>0.1221</td>" in response.content, True
+        )
+        self.assertEqual(
+            "<td>1.7532</td>" in response.content, True
+        )
+
+class CurveFitFailTest(TestCase):
+    """
+    Test that fails are handled well.
+    """
+    def setUp(self):
+        """
+        Create files for form.
+        """
+        # Fake data...
+        param = [0.9563, 0.1221, 1.7532]
+        xmax = np.log10(150)
+        xmin = np.log10(0.001)
+        x = np.arange(xmin, xmax, (xmax - xmin)/25)
+        x = [10**xi for xi in x]
+        # create files...
+        wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.xls'))
+        okwbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 
+                                                           'oktest.xls'))
+        csvfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.csv'))
+        txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
+        wbk = xlwt.Workbook()
+        okwbk = xlwt.Workbook()
+        sheet = wbk.add_sheet('sheet 1')
+        oksheet = okwbk.add_sheet('sheet 1')
+        csv = open(csvfile, "w")
+        txt = open(txtfile, "w")
+        # write data to files...
+        for i, xi in enumerate(x):
+            yi = 1 - (param[0]/(1 + (param[1]/xi) ** param[2]))
+            sheet.write(i, 1, xi)
+            sheet.write(i, 2, yi)
+            oksheet.write(i, 0, xi)
+            oksheet.write(i, 1, yi)
+            csv.write(",%f,%f\n" % (xi, yi))
+            txt.write("%f,%f\n" % (xi, yi))
+        wbk.save(wbfile)
+        okwbk.save(okwbfile)
+        csv.close()
+        txt.close()
+
+    def test_bad_txt_file_gives_200(self):
+        """
+        Bad input should still return a page.
+        """
+        txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "y axis",
+                'y_label': "x axis",
+                'infile': open(txtfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_bad_txt_file_gives_form_page(self):
+        """
+        Bad input should return form page.
+        """
+        txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "y axis",
+                'y_label': "x axis",
+                'infile': open(txtfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(
+            "<title>CurveFit | Curve Fit</title>" in response.content, True
+        )
+    
+    def test_bad_txt_file_gives_msg(self):
+        txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "y axis",
+                'y_label': "x axis",
+                'infile': open(txtfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(
+            '<p class="errorlist">Cannot read data from input file.</p>' \
+            in response.content, True
+        )
+
+    def test_bad_csv_file_gives_msg(self):
+        csvfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.csv'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "x axis",
+                'y_label': "y axis",
+                'infile': open(csvfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(
+            '<p class="errorlist">Cannot read data. Empty input.</p>' \
+            in response.content, True
+        )
+
+    def test_bad_xls_file_gives_msg(self):
+        xlsfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.xls'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "x axis",
+                'y_label': "y axis",
+                'infile': open(xlsfile, "rb")
+            }, follow=True
+        )
+        self.assertEqual(
+            '<p class="errorlist">Cannot read data. Empty input.</p>' \
+            in response.content, True
+        )
+
+    def test_bad_input_non_float_guess(self):
+        okxlsfile = os.path.join(PROJECT_PATH, os.path.join('tests', 
+                                                            'oktest.xls'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 'one',
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "x axis",
+                'y_label': "y axis",
+                'infile': open(okxlsfile, "rb")
+            }, follow=True
+        )
+        self.assertEqual(
+            '<ul class="errorlist"><li>Enter a number.</li>' \
+            in response.content, True
+        )
+
+    def test_no_input_file(self):
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "x axis",
+                'y_label': "y axis",
+            }, follow=True
+        )
+        self.assertEqual(
+            '<ul class="errorlist"><li>This field is required.</li></ul>' \
+            in response.content, True
+        )
+
+    def test_curvefit_fails_without_guess(self):
+        okxlsfile = os.path.join(PROJECT_PATH, os.path.join('tests', 
+                                                            'oktest.xls'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': '',
+                'm2': '',
+                'm3': '',
+                'm4': '',
+                'x_label': "y axis",
+                'y_label': "x axis",
+                'infile': open(okxlsfile, "rb")
+            }, follow=True
+        )
+        self.assertEqual(
+            '<ul class="errorlist"><li>This field is required.</li></ul>' \
+            in response.content, True
+        )
+
+

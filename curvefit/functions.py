@@ -25,8 +25,8 @@ class CurveFit:
         
     def file_handler(self, extn):
         """
-        Read data from file. Use xlrd to handle .xls files. Return x and y values
-        and a message. I think the msg was only debugging, but I don't remember.
+        Read data from file. Use xlrd to handle .xls files. Return x and y 
+        values and a message.
         """
         xdata, ydata = [], []
         if extn == '.xls':
@@ -46,8 +46,13 @@ class CurveFit:
                         row = line.split()
                     elif extn == '.csv':
                         row = line.strip().split(',')
-                    x_raw.append(row[0])
-                    y_raw.append(row[1])
+                    try:
+                        x_raw.append(row[0])
+                        y_raw.append(row[1])
+                    except IndexError:
+                        self.msg = "Cannot read data from input file."
+                        os.remove(self.filepath)
+                        return
             for i in range(len(x_raw)):
                 try:
                     x, y = float(x_raw[i]), float(y_raw[i])
@@ -58,6 +63,8 @@ class CurveFit:
         self.x = np.array(xdata) 
         self.y = np.array(ydata)
         os.remove(self.filepath)
+        if not xdata or not ydata:
+            self.msg = "Cannot read data. Empty input."
 
     def equation(self):
         if self.model == "boltzmann":

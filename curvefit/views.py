@@ -54,6 +54,12 @@ def curvefit(request):
             
             fit = CurveFit(filepath, model, var)
             fit.file_handler(ext)
+            if fit.msg:
+                form = CurvefitForm(request.POST)
+                return render_to_response('curvefit/curvefitform.html',
+                                          {'form': form,
+                                           'msg': fit.msg},
+                                    context_instance=RequestContext(request))
             fit_var = fit.levenberg_marquardt()
             fit.plot(plotfile, xlabel, ylabel)
             
