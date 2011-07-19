@@ -1,0 +1,137 @@
+.container {
+	width: 100%;
+}
+
+body {
+	background: 'white';
+}
+
+section {
+	margin-top: 1em;
+	padding: 20px;
+	background: #fff;
+}
+
+/* Links */
+
+a {
+	color: #09c;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #069;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #069;
+}
+
+table.sortable th {
+    cursor: pointer;
+}
+tr.even {
+    background-color: #F0F0F0;
+}
+
+tr.odd {
+    background-color: #FFFFFF;
+}
+
+ul.markless {
+    list-style-type: none;
+}
+
+.rack li {
+    display: inline-block;
+}
+
+.drawer li {
+    display: block;
+}
+
+div.field, div.actions {
+	margin-bottom: 10px;
+}
+
+.field_with_errors {
+  margin-top: 10px;
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+
+.field_with_errors label {
+  color: #fff;
+}
+
+.fieldWrapper {
+    margin: 5px;
+}
+
+.fieldWrapper label {
+    float: left;
+    text-align: right;
+    padding-top: 4px;
+    padding-right: 8px;
+    width: 190px;
+}
+
+.button {
+    float: left;
+    text-align: right;
+    margin: 4px;
+    padding-right: 4px;
+    width: 190px;
+}
+
+.help-text {
+    display: inline-block;
+    font-size: 90%;
+}
+.recfield {
+    font-size: 80%;
+    font-style: italic;
+    color: red;
+    text-align: right;
+    width: 190px;
+}
+
+.errorlist {
+  width: 400px;
+  border: 2px solid red;
+  padding: 7px;
+  padding-bottom: 12px;
+  margin-left: 200px;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+  text-align: center;
+}
+
+.errorlist h2 {
+  text-align: left;
+  font-weight: bold;
+  padding: 5px 5px 5px 15px;
+  font-size: 12px;
+  margin: -7px;
+  background-color: #c00;
+  color: #fff;
+}
+
+.errorlist p {
+  color: #333;
+  margin-bottom: 0;
+  padding: 5px;
+}
+
+.errorlists ul li {
+  font-size: 12px;
+  list-style: square;
+}
+
+.centered {
+    text-align: center;
+}
+

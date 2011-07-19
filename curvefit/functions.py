@@ -226,3 +226,4 @@ def random_key():
     for i in range(20):
         key.append(random.choice(v))
     return "".join(key)
+

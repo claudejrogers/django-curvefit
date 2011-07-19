@@ -184,8 +184,7 @@ class CurveFitTest(TestCase):
         xmin = np.log10(0.001)
         x = np.arange(xmin, xmax, (xmax - xmin)/25)
         x = np.array([10**xi for xi in x])
-        y = 1 - (param[0]/
-                 (1 + (param[1]/x) ** param[2]))
+        y = 1 - (param[0]/(1 + (param[1]/x) ** param[2]))
         fit = CurveFit('dummy','ic50', param)
         fit.x = x
         fit.y = y
@@ -373,6 +372,32 @@ class CurvefitSuccessTest(TestCase):
             "<td>1.7532</td>" in response.content, True
         )
 
+    def test_axis_labels_are_not_required(self):
+        """
+        txt files are processed successfully.
+        """
+        txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
+        response = self.client.post('/curvefit/',
+            {
+                'model': 'ic50',
+                'm1': 1.0,
+                'm2': 1.0,
+                'm3': 1.0,
+                'm4': 1.0,
+                'x_label': "",
+                'y_label': "",
+                'infile': open(txtfile, "rU")
+            }, follow=True
+        )
+        self.assertEqual(
+            "<td>0.9563</td>" in response.content, True
+        )
+        self.assertEqual(
+            "<td>0.1221</td>" in response.content, True
+        )
+        self.assertEqual(
+            "<td>1.7532</td>" in response.content, True
+        )
 class CurveFitFailTest(TestCase):
     """
     Test that fails are handled well.

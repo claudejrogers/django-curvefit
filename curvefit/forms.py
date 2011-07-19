@@ -23,9 +23,9 @@ class CurvefitForm(forms.Form):
     m4 = forms.FloatField(label=u"m\u2084", help_text="*",
                         initial=1.0,
                         widget=forms.TextInput(attrs={'size': 10}))
-    x_label = forms.CharField(max_length=100,
+    x_label = forms.CharField(max_length=100, required=False,
                         widget=forms.TextInput(attrs={'size': 50}))
-    y_label = forms.CharField(max_length=100,
+    y_label = forms.CharField(max_length=100, required=False,
                         widget=forms.TextInput(attrs={'size': 50}))
     infile = forms.FileField(label="File", 
                         help_text="* .xls, .txt, and .csv files supported.")

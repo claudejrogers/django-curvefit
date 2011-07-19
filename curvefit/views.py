@@ -90,3 +90,4 @@ def curvefit(request):
         form = CurvefitForm()
     return render_to_response('curvefit/curvefitform.html', {'form': form}, 
                               context_instance=RequestContext(request))
+

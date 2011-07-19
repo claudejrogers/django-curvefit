@@ -1,0 +1,192 @@
+html {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	padding-left: 2em;
+	padding-right: 2em;
+	/*padding-top: 1em;*/
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 15px;
+	color: black;
+	background-color: #FFF;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: Arial, Helvetica, sans-serif;
+	padding-top: 1em;
+}
+
+h1 {
+	font-size: 2.2em;
+	line-height: 1;
+	margin-bottom: 0.5em;
+	padding-bottom: 1em;
+}
+
+h2 {
+	font-size: 1.5em;
+	margin-bottom: 0.75em;
+}
+
+h3 {
+	font-size: 1em;
+	line-height: 1;
+	margin-bottom: 1em;
+}
+
+table {
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+caption, th, td {
+	text-align: left;
+	font-weight: normal;
+	float: none !important;
+}
+
+table, th, td {
+	vertical-align: middle;
+	padding-right: 20px;
+	font-size: 13px;
+}
+
+caption, th {
+	font-weight: bold;
+}
+
+table, th {
+	font-weight: bold;
+    border-bottom: 2px solid #ccc;
+}
+
+table, td {
+    border-bottom: 1px solid #ccc;
+}
+
+table, tr {
+    height: 40px;
+}
+
+a img {
+	border: none;
+}
+
+/* forms.css */
+label {
+	font-weight:bold;
+}
+
+fieldset {
+	padding: 0 1.4em 1.4em 1.4em;
+	margin: 0 0 1.5em 0;
+	border: 1px solid #ccc;
+}
+
+legend {
+	font-weight: bold;
+	font-size: 1.2em;
+	margin-top: -0.2em;
+	margin-bottom: 1em;
+}
+
+input[type=text], input[type=password], input.text, input.title, textarea {
+	background-color: #fff;
+	border: 1px solid #bbb;
+}
+
+input[type=text]:focus, input[type=password]:focus, input.text:focus, input.title:focus, textarea:focus {
+	border-color: #666;
+}
+
+select {
+	background-color: #fff;
+	border-width: 1px;
+	border-style: solid;
+}
+
+input[type=text], input[type=password], input.text, input.title, textarea, select {
+	margin: 0.5em 0;
+}
+
+input.text, input.title {
+	width: 300px;
+	padding: 5px;
+}
+
+input.title {
+	font-size: 1.5em;
+}
+
+textarea {
+	width: 390px;
+	height: 250px;
+	padding: 5px;
+}
+
+form.inline {
+	line-height: 3;
+}
+
+form.inline p {
+	margin-bottom: 0;
+}
+
+.errorlist, .alert, .notice, .success, .info {
+	padding: 0.8em;
+	margin-bottom: 1em;
+	border: 2px solid #ddd;
+	list-style-type: none;
+}
+
+.errorlist, .alert {
+	background: #fbe3e4;
+	color: #8a1f11;
+	border-color: #fbc2c4;}
+
+.notice {
+	background: #fff6bf;
+	color: #514721;
+	border-color: #ffd324;
+}
+
+.success {
+	background: #e6efc2;
+	color: #264409;
+	border-color: #c6d880;
+}
+
+.info { 
+	background: #d5edf8;
+	color: #205791;
+	border-color: #92cae4;
+}
+
+.errorlist a, .alert a {
+	color:#8a1f11;
+}
+
+.notice a {
+	color: #514721;
+}
+
+.success a {
+	color: #264409;
+}
+
+.info a {
+	color: #205791;
+}
+
+
+
+
+
+
+
+
+
+
