@@ -11,4 +11,4 @@ Dependancies
 ------------
 * numpy
 * matplotlib
-* xlrd, wlwt 
+* xlrd, xlwt 

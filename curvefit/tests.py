@@ -374,7 +374,7 @@ class CurvefitSuccessTest(TestCase):
 
     def test_axis_labels_are_not_required(self):
         """
-        txt files are processed successfully.
+        Labels for the graph shouldn't be required'.
         """
         txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
         response = self.client.post('/curvefit/',
