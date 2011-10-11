@@ -33,13 +33,12 @@ def file_setup():
     wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.xls'))
     csvfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.csv'))
     txtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 'test.txt'))
-    badwbfile = os.path.join(PROJECT_PATH, os.path.join('tests', 
-                                                        'badtest.xls'))
-    badcsvfile = os.path.join(PROJECT_PATH, os.path.join('tests', 
-                                                         'badtest.csv'))
-    badtxtfile = os.path.join(PROJECT_PATH, os.path.join('tests', 
-                                                         'badtest.txt'))
-
+    badwbfile = os.path.join(PROJECT_PATH, 
+                             os.path.join('tests','badtest.xls'))
+    badcsvfile = os.path.join(PROJECT_PATH, 
+                              os.path.join('tests', 'badtest.csv'))
+    badtxtfile = os.path.join(PROJECT_PATH, 
+                              os.path.join('tests', 'badtest.txt'))
     wbk = xlwt.Workbook()
     badwbk = xlwt.Workbook()
     sheet = wbk.add_sheet('sheet 1')
@@ -254,6 +253,10 @@ class CurvefitSuccessTest(TestCase):
         """
         # Fake data...
         file_setup()
+
+    def tearDown(self):
+        for f in os.listdir(MEDIA_ROOT):
+            os.remove(os.path.join(MEDIA_ROOT, f))
         
     def setup_response(self, filename, model='ic50', var=1.0, label='a label'):
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', filename))
@@ -362,6 +365,10 @@ class CurveFitFailTest(TestCase):
         # Fake data...
         file_setup()
 
+    def tearDown(self):
+        for f in os.listdir(MEDIA_ROOT):
+            os.remove(os.path.join(MEDIA_ROOT, f))
+
     def setup_response(self, filename, model='ic50', var=1.0, label='a label'):
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', filename))
         if filename[-4::] == ".xls":
@@ -468,9 +475,3 @@ class CurveFitFailTest(TestCase):
             in response.content, True
         )
 
-class CleanUpTest(TestCase):
-    def setUp(self):
-        for f in os.listdir(MEDIA_ROOT):
-            os.remove(os.path.join(MEDIA_ROOT, f))
-    def test_files_are_gone(self):
-        self.assertEqual(os.listdir(MEDIA_ROOT), [])
