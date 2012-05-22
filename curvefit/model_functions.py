@@ -1,4 +1,60 @@
+import re
 import numpy as np
+import sympy as s
+
+def find_nvars(function):
+    return len(set(re.findall('var[0-9]+', function))) 
+
+def get_symbolic_function(function, nvars):
+    if nvars == 2:
+        x, var0, var1 = s.symbols("x var0 var1".split())
+    elif nvars == 3:
+        x, var0, var1, var2 = s.symbols("x var0 var1 var2".split())
+    elif nvars == 4:
+        x, var0, var1, var2, var3 = s.symbols("x var0 var1 var2 var3".split())
+    else:
+        return "Sorry, only four independent variables are supported at the moment"
+    return s.sympify(function)
+    
+def eq(symfunc, nvars):
+    if nvars == 2:
+        x, var0, var1 = s.symbols("x var0 var1".split())
+        return s.lambdify((x, var0, var1), symfunc, "numpy")
+    elif nvars == 3:
+        x, var0, var1, var2 = s.symbols("x var0 var1 var2".split())
+        return s.lambdify((x, var0, var1, var2), symfunc, "numpy")
+    elif nvars == 4:
+        x, var0, var1, var2, var3 = s.symbols("x var0 var1 var2 var3".split())
+        return s.lambdify((x, var0, var1, var2, var3), symfunc, "numpy")
+    else:
+        return "Error"
+
+def dvardx(symfunc, nvars):
+    if nvars == 2:
+        x, var0, var1 = s.symbols("x var0 var1".split())
+        dv0 = s.diff(symfunc, var0)
+        dv1 = s.diff(symfunc, var1)
+        return [s.lambdify((x, var0, var1), 
+                           func, "numpy") for func in [dv0, dv1]]
+    elif nvars == 3:
+        x, var0, var1, var2 = s.symbols("x var0 var1 var2".split())
+        dv0 = s.diff(symfunc, var0)
+        dv1 = s.diff(symfunc, var1)
+        dv2 = s.diff(symfunc, var2)
+        return [s.lambdify((x, var0, var1, var2), 
+                           func, "numpy") for func in [dv0, dv1, dv2]]
+    elif nvars == 4:
+        x, var0, var1, var2, var3 = s.symbols("x var0 var1 var2 var3".split())
+        dv0 = s.diff(symfunc, var0)
+        dv1 = s.diff(symfunc, var1)
+        dv2 = s.diff(symfunc, var2)
+        dv3 = s.diff(symfunc, var3)
+        return [s.lambdify((x, var0, var1, var2, var3), 
+                           func, "numpy") for func in [dv0, dv1, dv2, dv3]]
+    else:
+        return "Error"
+
+
 
 # Equations for the models
 def boltzmann_eq(x, var0, var1, var2, var3):

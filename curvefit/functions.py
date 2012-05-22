@@ -6,23 +6,28 @@ import xlrd
 import matplotlib.pyplot as plt
 
 from settings import MEDIA_ROOT
-import model_functions as mf 
+from model_functions import * 
 
 
 # I have numpy 2.0.0 on my machines. Comment this out if using earlier numpy
 np.seterr(all='ignore')
 
 class CurveFit:
-    def __init__(self, filepath, model, var):
+    def __init__(self, filepath, model, var, logscale=False):
         self.filepath = filepath
         self.msg = ''
-        self.model = model
+        self.logscale = logscale
         self.param = var
         self.var = var
+        self.nvar = len(var)
+        self.model = get_symbolic_function(model, self.nvar)
         self.x = []
         self.y = []
         self.m = []
         self.d = []
+        self.eqn = eq(self.model, self.nvar)
+        self.funcarray = dvardx(self.model, self.nvar)
+        print self.model
         
     def file_handler(self, extn):
         """
@@ -68,30 +73,10 @@ class CurveFit:
             self.msg = "Cannot read data. Empty input."
 
     def equation(self):
-        eqs = {
-            "boltzmann": mf.boltzmann_eq,
-            "expdecay": mf.expdecay_eq,
-            "gaussian": mf.gaussian_eq,
-            "hill": mf.hill_eq,
-            "ic50": mf.ic50_eq,
-            "mm": mf.mm_eq,
-            "modsin": mf.modsin_eq
-        }
-        if self.model in eqs:
-            self.m = eqs[self.model](self.x, *self.var)
+        self.m = self.eqn(self.x, *self.var)
 
     def derivatives(self):
-        pds = {
-            "boltzmann": mf.boltzmann_pd,
-            "expdecay": mf.expdecay_pd,
-            "gaussian": mf.gaussian_pd,
-            "hill": mf.hill_pd,
-            "ic50": mf.ic50_pd,
-            "mm": mf.mm_pd,
-            "modsin": mf.modsin_pd
-        }
-        if self.model in pds:
-            self.d = pds[self.model](self.x, *self.var)
+        self.d = [df(self.x, *self.var) for df in self.funcarray]
     
     def get_f(self):
         self.equation()
@@ -156,8 +141,7 @@ class CurveFit:
                  mec='k', mew=1, mfc='None')
         plt.xticks(size = 18)
         plt.yticks(size = 18)
-        if self.model == "boltzmann" or self.model == "hill" or \
-           self.model == "ic50":
+        if self.logscale:
             plt.xscale('log')
         plt.ylim((min(self.y) - max(self.y) * 0.2), 
                  (max(self.y) + max(self.y) * 0.2))

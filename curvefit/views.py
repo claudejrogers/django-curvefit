@@ -11,18 +11,20 @@ from django.core.context_processors import csrf
 
 from curvefit.forms import CurvefitForm
 from curvefit.functions import *
+from curvefit.model_functions import find_nvars
 
 def curvefit(request):
     if request.method == 'POST':
         form = CurvefitForm(request.POST, request.FILES)
         if form.is_valid():
-            model = form.cleaned_data['model']
+            model = str(form.cleaned_data['model'])
             m1 = form.cleaned_data['m1']
             m2 = form.cleaned_data['m2']
             m3 = form.cleaned_data['m3']
             m4 = form.cleaned_data['m4']
             xlabel = form.cleaned_data['x_label']
             ylabel = form.cleaned_data['y_label']
+            logscale = form.cleaned_data['logscale']
             infile = form.cleaned_data['infile']
             ext = os.path.splitext(infile.name)[1]
             if ext not in ['.txt', '.csv', '.xls']:
@@ -41,18 +43,31 @@ def curvefit(request):
             sf.write(content)
             sf.close()
             
-            if model == "boltzmann" or model == "gaussian":
+            nvars = find_nvars(model)
+            if nvars == 4:
                 var = np.array([m1, m2, m3, m4])
-            elif (model == "expdecay" or model == "hill" or model == "ic50" 
-                  or model == "modsin"):
+            elif nvars == 3:
                 var = np.array([m1, m2, m3])
-            elif model == "mm":
+            elif nvars == 2:
                 var = np.array([m1, m2])
-            
+            else:
+                msg = "Supported models must have at least 2 \
+                       and at most 4 independent variables!"
+                form = CurvefitForm()
+                return render_to_response('curvefit/curvefitform.html',
+                                          {'form': form, 'msg': msg},
+                                context_instance=RequestContext(request))
             plotname = "plot_" + random_key() + ".png"
             plotfile = os.path.join(MEDIA_ROOT, plotname)
             
-            fit = CurveFit(filepath, model, var)
+            try:
+                fit = CurveFit(filepath, model, var, logscale)
+            except:
+                msg = "There was an error in the model equation"
+                form = CurvefitForm(request.POST)
+                return render_to_response('curvefit/curvefitform.html',
+                                          {'form': form, 'msg': msg},
+                                context_instance=RequestContext(request))
             fit.file_handler(ext)
             if fit.msg:
                 form = CurvefitForm(request.POST)
@@ -64,19 +79,6 @@ def curvefit(request):
             fit.plot(plotfile, xlabel, ylabel)
             
             filename = os.path.basename(filepath)
-            
-            # Get fancy name for model
-            model_choices = (
-                ('boltzmann', 'Boltzmann sigmoid'),
-                ('expdecay', 'Exponential Decay'),
-                ('gaussian', 'Gaussian function'),
-                ('hill', 'Hill plot'),
-                ('ic50', 'Dose Response (ic50)'),
-                ('mm', 'Michaelis-Menten'),
-                ('modsin', 'Modified sine wave'),
-            )
-            mchoices = [i for i, j in model_choices]
-            this_model = model_choices[mchoices.index(model)][1]
             
             c = {
                 'filename': filename,

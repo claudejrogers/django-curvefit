@@ -5,9 +5,13 @@
 {% block content %}
 <h1>Curve Fit</h1>
 <p>
-  Enter an initial guess for the parameters below. 
+  Type in the model equation in the Model field.
+  Use var0, var1, var2, ..., varN for the parameters, and x for the 
+  independent variable.<br />
+  Enter an initial guess for each of the parameters below.<br />
   Try to guess within an order of magnitude, but 1.0 will usually work.<br />
-  The input file must have x values in the first column, and y values in the second column. 
+  The input file must have x values in the first column, and y values in 
+  the second column. 
 </p>
 {% if msg %}
   <p class="errorlist">{{ msg }}</p>
@@ -25,4 +29,16 @@
   	<input type="submit" value="Run" />
   </p>
 </form>
+<script src="/static/js/builtin_models.js"></script>
+<script type="text/javascript">
+  $('#id_builtin_models').change(function() {
+    var key = $('#id_builtin_models option:selected').val();
+    if (key !== "") {
+      var func = get_equation(key);
+      $('#id_model').val(func);
+    } else {
+      $('#id_model').val('');
+    }
+  });
+</script>
 {% endblock %}
