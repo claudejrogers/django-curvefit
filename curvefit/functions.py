@@ -27,7 +27,6 @@ class CurveFit:
         self.d = []
         self.eqn = eq(self.model, self.nvar)
         self.funcarray = dvardx(self.model, self.nvar)
-        print self.model
         
     def file_handler(self, extn):
         """
@@ -86,6 +85,8 @@ class CurveFit:
         args = []
         self.derivatives()
         for i in self.d:
+            if isinstance(i, int):
+                i = self.x**0.0
             args.append(i)
         jt = np.array(args)
         return -1 * jt.T

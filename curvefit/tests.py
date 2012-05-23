@@ -124,7 +124,10 @@ class CurveFitTest(TestCase):
     Test that the curvefit functions return the expected values.
     """
     def run_levenberg_marquardt(self, model, param, yfunc):
-        if model in ['boltzmann', 'hill', 'ic50']:
+        if model in [
+            'var0 + ((var1 - var0) / (1 + exp((var2 - x) / var3)))', 
+            'var0 / (1 + (var1 / x)** var2)', 
+            '1 - (var0 / (1 + (var1 / x) ** var2))']:
             xmax = np.log10(150)
             xmin = np.log10(0.001)
             x = np.arange(xmin, xmax, (xmax - xmin)/25)
@@ -142,9 +145,10 @@ class CurveFitTest(TestCase):
         Test that the boltzman model returns input params for an ideal curve
         """
         param = [0.0012, 0.9563, 0.1221, 1.7532]
+        model = 'var0 + ((var1 - var0) / (1 + exp((var2 - x) / var3)))'
         y = lambda param, x: param[0] + ((param[1] - param[0]) /
                              (1 + np.exp((param[2] - x) / param[3])))
-        iters, vals = self.run_levenberg_marquardt('boltzmann', param, y) 
+        iters, vals = self.run_levenberg_marquardt(model, param, y) 
         # round values to minimize floating point differences
         param_to_str = " ".join(map(lambda x: "%.4f" % x, param))
         vals_to_str = " ".join(map(lambda x: "%.4f" % x, vals))
@@ -155,8 +159,9 @@ class CurveFitTest(TestCase):
         Test that the expdecay model returns input params for an ideal curve
         """
         param = [0.9563, 0.1221, 1.7532]
+        model = 'var0 + var1 * exp(-var2 * x)'
         y = lambda param, x: param[0] + param[1] * np.exp(-param[2] * x)
-        iters, vals = self.run_levenberg_marquardt('expdecay', param, y)
+        iters, vals = self.run_levenberg_marquardt(model, param, y)
         # round values to minimize floating point differences
         param_to_str = " ".join(map(lambda x: "%.4f" % x, param))
         vals_to_str = " ".join(map(lambda x: "%.4f" % x, vals))
@@ -167,8 +172,9 @@ class CurveFitTest(TestCase):
         Test that the hill model returns input params for an ideal curve
         """
         param = [0.9563, 0.1221, 1.7532]
+        model = 'var0 / (1 + (var1 / x)** var2)'
         y = lambda param, x: param[0] / (1 + (param[1]/x)**param[2])
-        iters, vals = self.run_levenberg_marquardt('hill', param, y)
+        iters, vals = self.run_levenberg_marquardt(model, param, y)
         # round values to minimize floating point differences
         param_to_str = " ".join(map(lambda x: "%.4f" % x, param))
         vals_to_str = " ".join(map(lambda x: "%.4f" % x, vals))
@@ -179,9 +185,10 @@ class CurveFitTest(TestCase):
         Test that the ic50 model returns input params for an ideal curve
         """
         param = [0.9563, 0.1221, 1.7532]
+        model = '1 - (var0 / (1 + (var1 / x) ** var2))'
         y = lambda param, x: 1 - (param[0]/
                              (1 + (param[1]/x) ** param[2]))
-        iters, vals = self.run_levenberg_marquardt('ic50', param, y)
+        iters, vals = self.run_levenberg_marquardt(model, param, y)
         # round values to minimize floating point differences
         param_to_str = " ".join(map(lambda x: "%.4f" % x, param))
         vals_to_str = " ".join(map(lambda x: "%.4f" % x, vals))
@@ -192,9 +199,10 @@ class CurveFitTest(TestCase):
         Test that the ic50 model returns input params for an ideal curve
         """
         param = [9.563, 0.6257]
+        model = '(var0 * x) / (var1 + x)'
         y = lambda param, x: (param[0] * x) / (param[1] + x)
-        fit = CurveFit('dummy', 'mm', [1.0, 1.0])
-        iters, vals = self.run_levenberg_marquardt('mm', param, y)
+        fit = CurveFit('dummy', model, [1.0, 1.0])
+        iters, vals = self.run_levenberg_marquardt(model, param, y)
         # round values to minimize floating point differences
         param_to_str = " ".join(map(lambda x: "%.4f" % x, param))
         vals_to_str = " ".join(map(lambda x: "%.4f" % x, vals))
@@ -205,12 +213,13 @@ class CurveFitTest(TestCase):
         A perfect guess should not iterate
         """
         param = [0.9563, 0.1221, 1.7532]
+        model = '1 - (var0 / (1 + (var1 / x) ** var2))'
         xmax = np.log10(150)
         xmin = np.log10(0.001)
         x = np.arange(xmin, xmax, (xmax - xmin)/25)
         x = np.array([10**xi for xi in x])
         y = 1 - (param[0]/(1 + (param[1]/x) ** param[2]))
-        fit = CurveFit('dummy','ic50', param)
+        fit = CurveFit('dummy', model, param)
         fit.x = x
         fit.y = y
         iters, vals = fit.levenberg_marquardt()
@@ -225,8 +234,8 @@ class CurvefitFormTest(TestCase):
         self.assertEqual(response.status_code, 200)
     def test_page_has_title(self):
         response = self.client.get('/curvefit/')
-        self.assertEqual(
-            "<title>CurveFit | Curve Fit</title>" in response.content, True
+        self.assertTrue(
+            "<title>CurveFit | Curve Fit</title>" in response.content
         )
     def test_page_has_curvefit_options(self):
         MODEL_CHOICES = (
@@ -241,7 +250,7 @@ class CurvefitFormTest(TestCase):
         response = self.client.get('/curvefit/')
         for i in MODEL_CHOICES:
             opt = "<option value=\"%s\">%s</option>" % (i[0], i[1])
-            self.assertEqual(opt in response.content, True)
+            self.assertTrue(opt in response.content)
             
 class CurvefitSuccessTest(TestCase):
     """
@@ -258,7 +267,11 @@ class CurvefitSuccessTest(TestCase):
         for f in os.listdir(MEDIA_ROOT):
             os.remove(os.path.join(MEDIA_ROOT, f))
         
-    def setup_response(self, filename, model='ic50', var=1.0, label='a label'):
+    def setup_response(self, 
+                       filename, 
+                       model='1 - (var0 / (1 + (var1 / x) ** var2))', 
+                       var=1.0, 
+                       label='a label'):
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', filename))
         if filename[-4::] == ".xls":
             f = open(wbfile, "rb")
@@ -369,7 +382,11 @@ class CurveFitFailTest(TestCase):
         for f in os.listdir(MEDIA_ROOT):
             os.remove(os.path.join(MEDIA_ROOT, f))
 
-    def setup_response(self, filename, model='ic50', var=1.0, label='a label'):
+    def setup_response(self,
+                       filename, 
+                       model='1 - (var0 / (1 + (var1 / x) ** var2))', 
+                       var=1.0, 
+                       label='a label'):
         wbfile = os.path.join(PROJECT_PATH, os.path.join('tests', filename))
         if filename[-4::] == ".xls":
             f = open(wbfile, "rb")

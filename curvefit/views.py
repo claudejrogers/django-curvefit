@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.context_processors import csrf
-
+from sympy.core.sympify import SympifyError
 
 from curvefit.forms import CurvefitForm
 from curvefit.functions import *
