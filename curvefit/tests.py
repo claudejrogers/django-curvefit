@@ -487,8 +487,33 @@ class CurveFitFailTest(TestCase):
         Not providing an initial guess should give a message
         """
         response = self.setup_response('test.xls', var="")
-        self.assertEqual(
+        self.assertTrue(
             '<ul class="errorlist"><li>This field is required.</li></ul>' \
-            in response.content, True
+            in response.content
         )
+
+    def test_curfit_fails_with_wrong_number_args(self):
+        """
+        Providing wrong number of args in model should give a message
+        """
+        response = self.setup_response('test.xls', model='log(x) + var0')
+        self.assertTrue(
+            '<p class="errorlist">Supported models must have at least 2' in response.content
+        )
+        response = self.setup_response(
+            'test.xls', 
+            model='var2*log(var1*x) + var0*exp(var3*x / var4)')
+        self.assertTrue(
+            '<p class="errorlist">Supported models must have at least 2' in response.content
+        )
+
+    def test_bad_model(self):
+        """
+        A bad model should return a message.
+        """
+        response = self.setup_response('test.xls', model='print "hacked"; var0; var1')
+        self.assertTrue(
+            '<p class="errorlist">There was an error in the model equation.</p>' in response.content
+        )
+
 

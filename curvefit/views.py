@@ -63,7 +63,7 @@ def curvefit(request):
             try:
                 fit = CurveFit(filepath, model, var, logscale)
             except:
-                msg = "There was an error in the model equation"
+                msg = "There was an error in the model equation."
                 form = CurvefitForm(request.POST)
                 return render_to_response('curvefit/curvefitform.html',
                                           {'form': form, 'msg': msg},
